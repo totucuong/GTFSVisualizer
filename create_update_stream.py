@@ -9,6 +9,9 @@
 import sys
 import os
 import random
+import networkx as nx
+import matplotlib.pyplot as plt
+
 
 def main():
   if len(sys.argv) != 3:
@@ -30,22 +33,7 @@ def main():
     fields = trip.split(',')
     trips.append(fields[2])
   print 'there are ', len(trips), ' trips'
-  #parsing checkins data
-  checkinsF = open(sys.argv[2], 'rU')
-  #f2 = open(os.path.dirname(f.name) +'/san_francisco_' + sys.argv[2] + '_' + \
-  updateF = open('update.txt', 'w')
-  updateF.write('[tripId]\t' + checkinsF.readline())
-  for checkin in checkinsF:
-    # randomly pick a trip to update
-    tripId = trips[random.randint(0, len(trips))]
-    # randomly pick a stop in the above trip to update
-    #stopId = random.randint(o)
-    #updateF.write(checkin + '\t' + tripId + '\n')
-    updateF.write(tripId + '\t' + checkin)
-  stopsF.close()
-  tripsF.close()
-  updateF.close()
-   # parsing stop_times.txt
+  # parsing stop_times.txt
   stop_timesF = open(sys.argv[1] + 'stop_times.txt', 'rU')
   tripIdToStopSq = {}
   stopSq = []
@@ -64,25 +52,20 @@ def main():
       tripId = fields[0]
       stopSq.append(fields[3])
   print 'there are ', len(tripIdToStopSq.keys()), 'trips'
-  # save tripIdToStopSq to file
-  tripStopsF = open('tripStops.txt', 'w')
-  tripStopsF.write('trip_id' + '\t' + 'stops' + '\n')
-  for k, v in tripIdToStopSq.items():
-    outstr = k
-    for stop in v:
-      outstr += '\t' + stop
-    tripStopsF.write(outstr + '\n')
-
   stop_timesF.close()
-
+  #parsing checkins data
+  checkinsF = open(sys.argv[2], 'rU')
+  #f2 = open(os.path.dirname(f.name) +'/san_francisco_' + sys.argv[2] + '_' + \
+  updateF = open('update.txt', 'w')
+  updateF.write('[stopId]\t[tripId]\t' + checkinsF.readline())
+  for checkin in checkinsF:
+    # randomly pick a trip to update
+    tripId = trips[random.randint(0, len(trips)-1)]
+    # randomly pick a stop in the above trip to update
+    stopId = tripIdToStopSq[tripId][random.randint(0, len(tripIdToStopSq[tripId])-1)]
+    updateF.write(stopId + '\t' + tripId + '\t' + checkin)
+  stopsF.close()
+  tripsF.close()
+  updateF.close()
 if __name__ == '__main__':
   main()
-
-
-  #for stop in stops:
-  #  print stop
-  #print 'there are ', len(stops)
-
-  #for trip in trips:
-  #  print trip
-  #print 'there are ', len(trips), ' trips'
