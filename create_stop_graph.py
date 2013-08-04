@@ -14,7 +14,7 @@ import os
 import random
 import networkx as nx
 import matplotlib.pyplot as plt
-
+import array
 
 def main():
   if len(sys.argv) != 2:
@@ -25,12 +25,16 @@ def main():
   stops = []
   stopsLat = {}
   stopsLon = {}
-  stopsF.readline() # skip the first line
+  headers = stopsF.readline().split(',')
+  # index column name in stops.txt
+  headerIndex = {}
+  for i in range(0, len(headers)):
+    headerIndex[headers[i]] = i
   for stop in stopsF:
     fields = stop.split(',')
     stops.append(fields[0])
-    stopsLat[fields[0]] = fields[4]
-    stopsLon[fields[0]] = fields[5]
+    stopsLat[fields[0]] = fields[headerIndex['stop_lat']]
+    stopsLon[fields[0]] = fields[headerIndex['stop_lon']]
   print 'there are ', len(stops), 'stops'
   # parsing trips.txt
   tripsF = open(sys.argv[1] + '/trips.txt', 'rU')
@@ -81,21 +85,26 @@ def main():
   # draw stop graph
   print 'drawing..'
   # node size is propotional to its degree
-  nodesize = [mdg.degree(v) for v in mdg.nodes()]
+  nodesize = [mdg.degree(v)*10 for v in mdg.nodes()]
   # layout according to (lat,lon) position of stops
-  pos=nx.spring_layout(mdg, iterations=20)
-  for node in pos:
-    pos[node][0] = mdg.node[node]['lat']
-    try:
-      pos[node][1] = mdg.node[node]['lon']
-    except:
-      print mdg.node[node]['lon']
+  #pos=nx.spring_layout(mdg, iterations=20)
+  pos = {}
+  for node in mdg.nodes():
+    a = array.array('f')
+    a.append(float(mdg.node[node]['lat']))
+    a.append(float(mdg.node[node]['lon']))
+    pos[node] = a
+    #pos[node][0] = mdg.node[node]['lat']
+    #pos[node][1] = mdg.node[node]['lon']
+
+  #print pos
   plt.figure(figsize=(8,8))
   nx.draw_networkx_nodes(mdg,pos,node_size=nodesize, node_color='r', alpha=0.4)
   nx.draw_networkx_edges(mdg,pos,alpha=0.4,node_size=0,width=1,edge_color='k')
   #nx.draw_networkx_labels(mdg,pos,fontsize=9)
   plt.show()
   #plt.savefig("stopgraph.png");
+
 
 if __name__ == '__main__':
   main()
